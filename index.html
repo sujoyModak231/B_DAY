@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Himani</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Cormorant:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;500&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --ink:#06040a;
+  --deep:#0d0912;
+  --surface:#110e17;
+  --card:#161220;
+  --border:rgba(180,130,90,.18);
+  --border-warm:rgba(180,130,90,.38);
+  --gold:#c8a96e;
+  --gold-dim:rgba(200,169,110,.45);
+  --gold-glow:rgba(200,169,110,.12);
+  --wine:#7a1830;
+  --wine-mid:#a02040;
+  --wine-light:#c84060;
+  --cream:#ede0ce;
+  --muted:#7e6e7a;
+  --text:#cbbfc8;
+}
+
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--ink);color:var(--text);font-family:'EB Garamond',serif;overflow-x:hidden}
+
+/* CURSOR */
+.cur{width:6px;height:6px;background:var(--wine-light);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:transform .15s}
+.cur-ring{width:28px;height:28px;border:1px solid rgba(200,169,110,.4);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:left .1s,top .1s}
+
+/* CANVAS LAYERS */
+#stars-c,#petals-c,#conf-c{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none}
+#stars-c{z-index:1}
+#petals-c{z-index:2}
+#conf-c{z-index:201;display:none}
+
+main{position:relative;z-index:10}
+
+/* ═══════════ TYPOGRAPHY ═══════════ */
+.label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.55em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:1rem;margin-bottom:1.8rem}
+.label::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--gold-dim),transparent)}
+.h1{font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,72px);font-weight:400;line-height:1.15;color:var(--cream)}
+.h2{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,48px);font-weight:400;line-height:1.2;color:var(--cream)}
+.h2 em,.h1 em{font-style:italic;color:var(--wine-light)}
+.body-text{font-family:'EB Garamond',serif;font-size:clamp(17px,1.8vw,20px);line-height:1.9;color:var(--text)}
+
+/* ═══════════ LAYOUT ═══════════ */
+.section{padding:clamp(4rem,8vw,7rem) clamp(1.5rem,6vw,5rem);max-width:1120px;margin:0 auto}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform .9s ease}
+.reveal.vis{opacity:1;transform:none}
+
+/* ─── HERO ─── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(122,24,48,.22),transparent 70%),radial-gradient(ellipse 40% 40% at 20% 80%,rgba(200,169,110,.06),transparent);pointer-events:none}
+.hero-eyebrow{font-family:'Cormorant',serif;font-style:italic;font-size:clamp(13px,2vw,17px);letter-spacing:.28em;color:var(--gold);opacity:0;animation:riseIn 1.2s .4s forwards;margin-bottom:1.4rem}
+.hero-name{font-family:'Cinzel',serif;font-size:clamp(72px,18vw,180px);font-weight:500;letter-spacing:.06em;line-height:.9;background:linear-gradient(160deg,#d4b87a 0%,#f2d898 30%,#c8a96e 55%,#8a5e22 80%,#c8a96e 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:0;animation:riseIn 1.4s .7s forwards;filter:drop-shadow(0 0 60px rgba(200,169,110,.2))}
+.hero-subtitle{font-family:'Cormorant',serif;font-size:clamp(14px,2.5vw,22px);font-style:italic;color:rgba(200,160,180,.7);letter-spacing:.2em;opacity:0;animation:riseIn 1.2s 1.1s forwards;margin-top:1.2rem}
+.hero-ornament{display:flex;align-items:center;gap:1.2rem;margin:2.5rem auto;opacity:0;animation:riseIn 1s 1.5s forwards}
+.orn-line{width:60px;height:1px;background:linear-gradient(to right,transparent,var(--gold-dim))}
+.orn-line.r{background:linear-gradient(to left,transparent,var(--gold-dim))}
+.orn-diamond{width:6px;height:6px;background:var(--gold);transform:rotate(45deg)}
+.hero-date{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.5em;color:rgba(200,169,110,.35);opacity:0;animation:riseIn 1s 1.9s forwards}
+.scroll-hint{position:absolute;bottom:2.5rem;display:flex;flex-direction:column;align-items:center;gap:.8rem;opacity:0;animation:fadeIn 1.2s 2.8s forwards}
+.scroll-hint span{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:var(--muted)}
+.scroll-track{width:1px;height:50px;background:linear-gradient(to bottom,var(--wine-mid),transparent);position:relative;overflow:hidden}
+.scroll-thumb{width:100%;height:30%;background:linear-gradient(to bottom,transparent,var(--gold));position:absolute;top:-30%;animation:scrollDrop 2.2s ease-in-out infinite}
+
+/* ─── DIVIDERS ─── */
+.divider{width:100%;height:1px;background:linear-gradient(to right,transparent,var(--border),transparent);margin:0 auto}
+
+/* ─── CAKE ─── */
+.cake-section{text-align:center}
+.cake-stage{display:inline-flex;flex-direction:column;align-items:center;padding:2rem 0 3rem}
+.candles-row{display:flex;gap:14px;align-items:flex-end;margin-bottom:0;justify-content:center;padding:0 12px}
+
+.candle{display:flex;flex-direction:column;align-items:center;cursor:pointer;user-select:none;transition:opacity .4s}
+.candle:active{transform:scale(.9)}
+.flame-wrap{position:relative;display:flex;justify-content:center;width:22px;height:36px}
+.flame{width:13px;height:30px;background:radial-gradient(ellipse at 60% 80%,#fff 0%,#ffe066 20%,#ffaa00 55%,rgba(255,60,0,.5) 80%,transparent 100%);border-radius:50% 50% 20% 20%;animation:flicker .3s ease-in-out infinite alternate;transform-origin:bottom center;position:absolute;bottom:0;filter:blur(.3px)}
+.flame-inner{width:5px;height:14px;background:rgba(255,255,255,.7);border-radius:50%;position:absolute;bottom:4px;filter:blur(.5px)}
+.smoke-trail{display:none;position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:2px;animation:smokeUp 2.5s ease-out forwards}
+.candle.out .flame{display:none}.candle.out .smoke-trail{display:block}.candle.out .wax{background:#2a1e30}
+.wick-el{width:2px;height:8px;background:rgba(30,20,40,.9);border-radius:1px;margin-bottom:-1px;z-index:2}
+.wax{width:13px;height:52px;background:linear-gradient(170deg,#e8d080 0%,#c8a040 40%,#a07828 100%);border-radius:3px 3px 2px 2px;position:relative;overflow:visible;transition:background .5s}
+.wax::before{content:'';position:absolute;top:0;left:2px;bottom:0;width:3px;background:rgba(255,255,255,.15);border-radius:2px}
+.wax-drip{position:absolute;width:7px;height:10px;background:rgba(200,160,64,.5);border-radius:0 0 50% 50%;bottom:-6px;left:50%;transform:translateX(-50%)}
+
+.cake-wrap{position:relative}
+.tier{position:relative;margin:0 auto}
+.tier-3{width:130px;height:50px;background:linear-gradient(180deg,#1c1025 0%,#140c1e 100%);border:1px solid var(--border);border-bottom:none;border-radius:4px 4px 0 0}
+.tier-2{width:190px;height:60px;background:linear-gradient(180deg,#1a0e22 0%,#120a1a 100%);border:1px solid var(--border);border-bottom:none}
+.tier-1{width:250px;height:70px;background:linear-gradient(180deg,#170b1e 0%,#0f0815 100%);border:1px solid var(--border);border-radius:0 0 8px 8px}
+.tier-top{position:absolute;top:0;left:0;right:0;height:12px;border-radius:inherit;border-bottom:none}
+.tier-3 .tier-top{background:rgba(162,50,80,.55);border-radius:4px 4px 0 0}
+.tier-2 .tier-top{background:rgba(140,40,70,.45)}
+.tier-1 .tier-top{background:rgba(120,30,60,.4)}
+.tier-script{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cormorant',serif;font-style:italic;font-size:clamp(13px,2vw,16px);color:var(--gold-dim);white-space:nowrap;letter-spacing:.05em}
+.tier-dots{position:absolute;bottom:-5px;left:0;right:0;display:flex;justify-content:space-around;padding:0 10px}
+.tier-dot{width:10px;height:10px;border-radius:50%;background:rgba(162,50,80,.5)}
+.cake-plate{width:280px;height:16px;background:linear-gradient(180deg,#221530,#140e20);border-radius:50%;margin:0 auto;border:1px solid var(--border)}
+
+.blow-area{margin-top:2.5rem;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.blow-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.4em;background:none;border:1px solid var(--border-warm);color:var(--gold);padding:.9rem 2.4rem;cursor:pointer;transition:all .3s;border-radius:2px;text-transform:uppercase}
+.blow-btn:hover{background:rgba(200,169,110,.06);border-color:var(--gold)}
+.wish-text{font-family:'Cormorant',serif;font-style:italic;font-size:18px;color:var(--muted);min-height:1.6em;transition:color .4s}
+.wish-final{display:none;font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(19px,3vw,26px);color:var(--gold);line-height:1.8;animation:riseIn .9s forwards}
+.wish-final span{display:block;font-family:'Cormorant',serif;font-size:.75em;color:var(--wine-light);margin-top:.5rem}
+
+/* ─── GIFTS ─── */
+.gifts-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+@media(max-width:600px){.gifts-wrap{grid-template-columns:1fr 1fr}}
+
+.gift{position:relative;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:2.2rem 1rem 2rem;display:flex;flex-direction:column;align-items:center;gap:.8rem;cursor:pointer;overflow:hidden;transition:border-color .35s,transform .4s;text-align:center}
+.gift:hover{border-color:var(--border-warm);transform:translateY(-10px)}
+.gift::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--wine-light),transparent);opacity:0;transition:opacity .35s}
+.gift:hover::before{opacity:.7}
+.gift-ribbon{position:absolute;inset:0;pointer-events:none}
+.gift-ribbon::before,.gift-ribbon::after{content:'';position:absolute;background:rgba(200,169,110,.07)}
+.gift-ribbon::before{top:0;bottom:0;left:50%;width:1px}
+.gift-ribbon::after{left:0;right:0;top:50%;height:1px}
+.gift-bow-wrap{position:absolute;top:calc(50% - 12px);left:calc(50% - 12px);width:24px;height:24px}
+.gift-bow-el{width:100%;height:100%;border-radius:50%;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.18)}
+.gift-icon{font-size:36px;display:block;animation:hov 3s ease-in-out infinite}
+.gift:nth-child(2) .gift-icon{animation-delay:.5s}
+.gift:nth-child(3) .gift-icon{animation-delay:1s}
+@keyframes hov{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.gift-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.35em;color:var(--gold)}
+.gift-sub{font-size:12px;color:var(--muted);font-style:italic}
+.gift.opened{border-color:rgba(200,169,110,.35)}
+
+/* ─── MODAL ─── */
+.overlay{position:fixed;inset:0;background:rgba(5,3,8,.93);backdrop-filter:blur(16px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;padding:1rem}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:2.5rem;max-width:580px;width:100%;max-height:88vh;overflow-y:auto;position:relative;transform:translateY(20px) scale(.97);transition:transform .4s;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.overlay.open .modal{transform:none}
+.modal-close{position:absolute;top:1.2rem;right:1.2rem;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;transition:color .2s;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid var(--border)}
+.modal-close:hover{color:var(--cream);border-color:var(--border-warm)}
+.modal-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.45em;color:var(--gold);margin-bottom:2rem;display:flex;align-items:center;gap:.8rem}
+.modal-label::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--gold-dim),transparent)}
+
+/* ─── MUSIC MODAL ─── */
+.music-player{display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+.vinyl-arm{position:relative;width:200px;height:200px}
+.vinyl-disc{width:200px;height:200px;border-radius:50%;background:repeating-conic-gradient(from 0deg,#0e0a14 0deg 4deg,#161220 4deg 8deg);box-shadow:0 0 0 6px #0c0912,0 0 0 7px rgba(200,169,110,.15),0 0 80px rgba(0,0,0,.8);position:relative;animation:spin 5s linear infinite paused}
+.vinyl-disc.playing{animation-play-state:running}
+.vinyl-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#9e2040,#5a0c20);border:1px solid rgba(200,169,110,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.vinyl-dot{width:9px;height:9px;border-radius:50%;background:#050308}
+.vinyl-text{font-family:'Cinzel',serif;font-size:5.5px;color:rgba(200,169,110,.65);letter-spacing:.12em;text-align:center;line-height:1.4}
+.needle{position:absolute;top:-10px;right:-14px;width:3px;height:80px;background:linear-gradient(to bottom,var(--gold),rgba(200,169,110,.3));border-radius:2px;transform-origin:top center;transform:rotate(-28deg);transition:transform .5s;pointer-events:none}
+.needle.playing{transform:rotate(-18deg)}
+.player-controls{display:flex;align-items:center;gap:1.4rem}
+.play-pause{width:56px;height:56px;border-radius:50%;border:1px solid var(--border-warm);background:rgba(122,24,48,.15);color:var(--cream);font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+.play-pause:hover{background:rgba(122,24,48,.3);border-color:var(--wine-light)}
+.wave-bars{display:flex;gap:3px;align-items:center;height:28px}
+.bar{width:3px;background:var(--wine-mid);border-radius:3px;animation:wave 1s ease-in-out infinite}
+.bar:nth-child(1){height:9px;animation-delay:0s}.bar:nth-child(2){height:18px;animation-delay:.1s}.bar:nth-child(3){height:13px;animation-delay:.2s}.bar:nth-child(4){height:22px;animation-delay:.3s}.bar:nth-child(5){height:10px;animation-delay:.4s}.bar:nth-child(6){height:17px;animation-delay:.5s}.bar:nth-child(7){height:7px;animation-delay:.6s}
+.wave-bars.still .bar{animation-play-state:paused}
+@keyframes wave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.25)}}
+.song-meta{text-align:center;width:100%}
+.track-list{display:flex;flex-direction:column;gap:.8rem;width:100%}
+.track-item{background:rgba(10,7,16,.6);border:1px solid var(--border);border-radius:6px;padding:1rem;cursor:pointer;transition:all .3s;display:flex;flex-direction:column;gap:.4rem}
+.track-item:hover{border-color:var(--border-warm);transform:translateX(4px)}
+.track-item.active{border-color:var(--wine-light);background:rgba(122,24,48,.15)}
+.track-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--cream);font-style:italic}
+.track-artist{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:var(--muted)}
+.song-caption{font-family:'Cormorant',serif;font-style:italic;font-size:16px;color:rgba(162,80,100,.8);text-align:center;margin-top:1rem}
+
+/* ─── BOOK MODAL ─── */
+.book-modal{max-width:700px}
+.book-container{perspective:1200px;margin:2rem 0}
+.book{width:100%;height:400px;position:relative;transform-style:preserve-3d;transition:transform .6s}
+.book-page{position:absolute;width:50%;height:100%;background:linear-gradient(135deg,#f5e6d3,#e8d4b0);border:1px solid #d4a574;box-shadow:0 5px 20px rgba(0,0,0,.3);padding:2rem;backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center}
+.left-page{left:0;border-radius:8px 0 0 8px;transform:rotateY(180deg)}
+.right-page{right:0;border-radius:0 8px 8px 0}
+.page-decoration{position:absolute;top:1rem;left:1rem;right:1rem;height:1px;background:linear-gradient(to right,transparent,var(--wine-light),transparent);opacity:.3}
+.page-content{color:#3d2817;font-family:'Cormorant',serif;text-align:center}
+.page-number{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.3em;color:var(--wine);margin-bottom:1rem}
+.page-title{font-size:24px;margin-bottom:1rem;color:var(--wine)}
+.page-text{font-size:16px;line-height:1.8;font-style:italic}
+.book-nav{display:flex;justify-content:space-between;align-items:center;margin-top:2rem}
+.bnav-btn{background:none;border:1px solid var(--border);color:var(--gold);font-family:'Cinzel',serif;font-size:10px;letter-spacing:.25em;padding:.5rem 1.1rem;cursor:pointer;border-radius:2px;transition:all .2s}
+.bnav-btn:hover{border-color:var(--border-warm)}
+.page-ct{font-size:11px;color:var(--muted);letter-spacing:.2em;font-family:'Cinzel',serif}
+
+/* ─── SCRATCH CARD MODAL ─── */
+.scratch-container{position:relative;width:400px;height:250px;margin:2rem auto;border-radius:8px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.scratch-canvas{position:absolute;top:0;left:0;cursor:crosshair;z-index:2}
+.scratch-message{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,var(--wine),var(--wine-mid));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;color:var(--cream)}
+.scratch-message h3{font-family:'Cinzel',serif;font-size:28px;margin-bottom:1rem;color:var(--gold)}
+.scratch-message p{font-family:'Cormorant',serif;font-style:italic;font-size:18px;line-height:1.6;max-width:320px}
+.scratch-sign{font-family:'Cormorant',serif;font-style:italic;font-size:16px;color:var(--gold);margin-top:1rem}
+.scratch-hint{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:var(--muted);text-align:center;margin-top:1rem}
+
+/* ─── PHOTOS ─── */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.p-wide{grid-column:span 2}
+@media(max-width:768px){.photo-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.photo-grid{grid-template-columns:1fr}}
+
+.photo-slot{position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:var(--card);border:1px solid var(--border);cursor:pointer;transition:all .3s ease}
+.photo-slot:hover{transform:scale(1.02);border-color:var(--border-warm);box-shadow:0 10px 25px rgba(0,0,0,.2)}
+.photo-slot img,.photo-slot video{width:100%;height:100%;object-fit:cover;display:block}
+.photo-slot video{object-fit:cover}
+.photo-caption{font-family:'Cormorant',serif;font-style:italic;font-size:15px;color:var(--muted);text-align:center;margin-top:1.2rem;letter-spacing:.08em}
+
+/* ─── LETTER ─── */
+.letter-wrap{max-width:720px;margin:0 auto}
+.letter-body{background:rgba(12,8,18,.8);border:1px solid var(--border);border-radius:4px;padding:clamp(2rem,5vw,3.5rem) clamp(1.5rem,5vw,4rem);position:relative}
+.letter-drop{position:absolute;top:-1rem;left:2rem;font-family:'Playfair Display',serif;font-size:100px;color:rgba(122,24,48,.1);line-height:1;pointer-events:none}
+.letter-body p{font-family:'EB Garamond',serif;font-size:clamp(17px,2vw,20px);line-height:2;color:#c0b0bc;margin-bottom:1.6em}
+.letter-body p:last-child{margin:0}
+.letter-body em{font-style:italic;color:var(--cream)}
+.letter-sig{font-family:'Cormorant',serif;font-style:italic;font-size:22px;color:var(--wine-light);text-align:right;margin-top:2rem;display:block}
+
+/* ─── MEMORIES ─── */
+.mem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.4rem}
+.mem-card{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:2rem;position:relative;overflow:hidden;transition:border-color .3s,transform .3s;cursor:default}
+.mem-card:hover{border-color:var(--border-warm);transform:translateY(-5px)}
+.mem-card::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:1px;background:linear-gradient(to right,var(--wine-mid),transparent);opacity:0;transition:opacity .3s}
+.mem-card:hover::after{opacity:1}
+.mem-marker{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.3em;color:var(--gold);margin-bottom:.5rem}
+.mem-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--cream);margin-bottom:.4rem;font-style:italic}
+.mem-desc{font-size:14px;color:var(--muted);line-height:1.7}
+.mem-icon{position:absolute;top:1.5rem;right:1.5rem;font-size:20px;opacity:.25}
+
+/* ─── REASONS ─── */
+.reasons-list{border-top:1px solid var(--border)}
+.reason{display:flex;align-items:flex-start;gap:2rem;padding:2rem 0;border-bottom:1px solid var(--border);transition:padding-left .35s}
+.reason:hover{padding-left:.8rem}
+.rnum{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.2em;color:var(--gold-dim);min-width:28px;padding-top:6px}
+.rtxt{font-family:'Playfair Display',serif;font-size:clamp(20px,2.8vw,30px);font-weight:400;color:var(--cream);line-height:1.45}
+.rtxt em{font-style:italic;color:var(--wine-light)}
+
+/* ─── FOOTER ─── */
+footer{text-align:center;padding:5rem 2rem;position:relative}
+.footer-heart{font-size:28px;display:block;margin-bottom:1.5rem;animation:heartbeat 3s infinite}
+.footer-quote{font-family:'Cormorant',serif;font-style:italic;font-size:19px;color:var(--muted);margin-bottom:.5rem}
+.footer-end{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5em;color:rgba(200,169,110,.25);text-transform:uppercase}
+.footer-rule{width:1px;height:60px;background:linear-gradient(to bottom,transparent,var(--border),transparent);margin:2.5rem auto}
+
+/* ═══════════ KEYFRAMES ═══════════ */
+@keyframes riseIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes flicker{0%{transform:rotate(-5deg) scaleY(1) scaleX(1)}100%{transform:rotate(5deg) scaleY(.85) scaleX(.9)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.18)}30%{transform:scale(1)}45%{transform:scale(1.1)}60%{transform:scale(1)}}
+@keyframes scrollDrop{0%{top:-30%;opacity:0}30%{opacity:1}100%{top:130%;opacity:0}}
+
+/* ─── RESPONSIVE DESIGN ─── */
+@media(max-width:768px){
+  .hero-name{font-size:clamp(48px,12vw,100px)}
+  .section{padding:3rem 1.5rem}
+  .gifts-wrap{grid-template-columns:1fr}
+  .photo-grid{grid-template-columns:1fr}
+  .modal{padding:1.5rem;margin:1rem}
+  .vinyl-disc{width:150px;height:150px}
+  .book-container{perspective:800px}
+  .mem-grid{grid-template-columns:1fr}
+  .reasons-list .reason{flex-direction:column;gap:1rem}
+  .gift:hover{transform:translateY(-5px)}
+}
+
+@media(max-width:480px){
+  .hero-name{font-size:clamp(36px,10vw,60px)}
+  .section{padding:2rem 1rem}
+  .cake-stage{transform:scale(0.8)}
+  .vinyl-disc{width:120px;height:120px}
+  .modal{padding:1rem}
+  .gift{padding:1.5rem 0.5rem}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars-c"></canvas>
+<canvas id="petals-c"></canvas>
+<canvas id="conf-c"></canvas>
+<div class="cur" id="cur"></div>
+<div class="cur-ring" id="cur-ring"></div>
+
+<!-- ══ MUSIC MODAL ══ -->
+<div class="overlay" id="ov-music">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('music')">✕</button>
+    <div class="modal-label">our song</div>
+    <div class="music-player">
+      <div class="vinyl-arm">
+        <div class="vinyl-disc" id="vinyl">
+          <div class="vinyl-center">
+            <div class="vinyl-dot"></div>
+            <div class="vinyl-text">himani<br>&amp; you</div>
+          </div>
+        </div>
+        <div class="needle" id="needle"></div>
+      </div>
+      <div class="player-controls">
+        <button class="play-pause" id="play-btn" onclick="togglePlay()">▶</button>
+        <div class="wave-bars still" id="wave-bars">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+      </div>
+      <div class="song-meta">
+        <div class="track-list" id="track-list">
+          <div class="track-item active" data-track="0" onclick="selectTrack(0)">
+            <span class="track-title">Tomar Chokher Kalo</span>
+            <span class="track-artist">Birthday Song</span>
+          </div>
+        </div>
+      </div>
+      <p class="song-caption">every time this plays, I think of you</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BOOK MODAL ══ -->
+<div class="overlay" id="ov-book">
+  <div class="modal book-modal">
+    <button class="modal-close" onclick="closeModal('book')">✕</button>
+    <div class="modal-label">our story in pages</div>
+    <div class="book-container">
+      <div class="book" id="book">
+        <div class="book-page left-page">
+          <div class="page-decoration"></div>
+          <div class="page-content">
+            <h4 class="page-number" id="prev-page-num">— 1 —</h4>
+            <p class="page-text" id="prev-page-text">The beginning of everything...</p>
+          </div>
+        </div>
+        <div class="book-page right-page">
+          <div class="page-decoration"></div>
+          <div class="page-content">
+            <h3 class="page-title" id="current-page-title">The Day We Met</h3>
+            <p class="page-text" id="current-page-text">Some people spend their whole lives searching for what I found the moment I met you. You are the kind of person who makes the world feel quieter and softer — a place I actually want to stay in.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="book-nav">
+      <button class="bnav-btn" onclick="prevPage()">← prev</button>
+      <span class="page-ct" id="page-ct">1 / 7</span>
+      <button class="bnav-btn" onclick="nextPage()">next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCRATCH CARD MODAL ══ -->
+<div class="overlay" id="ov-scratch">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('scratch')">✕</button>
+    <div class="modal-label">scratch to reveal</div>
+    <div class="scratch-container">
+      <canvas class="scratch-canvas" id="scratch-canvas" width="400" height="250"></canvas>
+      <div class="scratch-message">
+        <h3>🎉 You Found It!</h3>
+        <p>Himani, you are the most beautiful thing that ever happened to me. Every day with you is a gift I never want to take for granted.</p>
+        <p class="scratch-sign">— yours forever 🖤</p>
+      </div>
+    </div>
+    <p class="scratch-hint">use your finger or mouse to scratch</p>
+  </div>
+</div>
+
+<!-- ══ LETTER MODAL ══ -->
+<div class="overlay" id="ov-letter">
+  <div class="modal" style="max-width:660px">
+    <button class="modal-close" onclick="closeModal('letter')">✕</button>
+    <div class="modal-label">a letter</div>
+    <div class="letter-body">
+      <div class="letter-drop">"</div>
+      <p>My dearest Himani,</p>
+      <p>I've thought about how to begin this a hundred times, and I keep arriving at the same truth — there is no elegant way to say that someone has become <em>necessary</em> to you. So I'll just say it plainly: you have.</p>
+      <p>You are not the person I thought I'd find. You're quieter than I expected, and sharper, and far more stubborn. You notice things other people don't. You hold opinions the way some people hold possessions — carefully, and with good reason. I find this unreasonably attractive.</p>
+      <p>What I want you to know, on this day especially, is that being loved by you is not something I take lightly. It is, in fact, the thing I am most grateful for.</p>
+      <p>This page is a small, clumsy attempt to put that gratitude into something you can hold. It will never be enough. But it's honest, and it's yours.</p>
+      <span class="letter-sig">— yours, always 🖤</span>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <p class="hero-eyebrow">a page made for</p>
+  <h1 class="hero-name">Himani</h1>
+  <p class="hero-subtitle">and everything you are to me</p>
+  <div class="hero-ornament">
+    <span class="orn-line"></span>
+    <span class="orn-diamond"></span>
+    <span class="orn-line r"></span>
+  </div>
+    <div class="scroll-hint">
+    <span>scroll</span>
+    <div class="scroll-track"><div class="scroll-thumb"></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ CAKE ═══ -->
+<section class="section cake-section reveal" id="cake-sec">
+  <p class="label">make a wish</p>
+  <h2 class="h2">a <em>ritual</em> for you</h2>
+  <div class="cake-stage">
+    <div class="candles-row" id="candles-row"></div>
+    <div class="cake-wrap">
+      <div class="tier tier-3">
+        <div class="tier-top"></div>
+      </div>
+      <div class="tier tier-2">
+        <div class="tier-top"></div>
+        <span class="tier-script">Himani ♡</span>
+      </div>
+      <div class="tier tier-1">
+        <div class="tier-top"></div>
+        <div class="tier-dots">
+          <div class="tier-dot"></div><div class="tier-dot"></div>
+          <div class="tier-dot"></div><div class="tier-dot"></div>
+          <div class="tier-dot"></div><div class="tier-dot"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cake-plate"></div>
+    <div class="blow-area">
+      <button class="blow-btn" onclick="blowOne()">🌬 &nbsp;blow a candle</button>
+      <p class="wish-text" id="wish-text">tap a candle, or use the button</p>
+      <p class="wish-final" id="wish-final">
+        your wish is heard, Himani
+        <span>may everything you want find its way to you</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ GIFTS ═══ -->
+<section class="section reveal">
+  <p class="label">for you</p>
+  <h2 class="h2">open your <em>gifts</em></h2>
+  <div class="gifts-wrap">
+    <div class="gift" id="g-music" onclick="openModal('music')">
+      <div class="gift-ribbon"><div class="gift-bow-wrap"><div class="gift-bow-el"></div></div></div>
+      <span class="gift-icon">🎵</span>
+      <span class="gift-title">music</span>
+      <span class="gift-sub">our song</span>
+    </div>
+    <div class="gift" id="g-book" onclick="openModal('book')">
+      <div class="gift-ribbon"><div class="gift-bow-wrap"><div class="gift-bow-el"></div></div></div>
+      <span class="gift-icon">📖</span>
+      <span class="gift-title">literature</span>
+      <span class="gift-sub">words picked for you</span>
+    </div>
+    <div class="gift" id="g-scratch" onclick="openModal('scratch')">
+      <div class="gift-ribbon"><div class="gift-bow-wrap"><div class="gift-bow-el"></div></div></div>
+      <span class="gift-icon">🎫</span>
+      <span class="gift-title">scratch</span>
+      <span class="gift-sub">reveal a surprise</span>
+    </div>
+  </div>
+  <p style="text-align:center;margin-top:1.5rem;font-family:'Cormorant',serif;font-style:italic;font-size:15px;color:var(--muted);letter-spacing:.08em">— gifts from my heart to yours —</p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ PHOTOS ═══ -->
+<section class="section reveal">
+  <p class="label">our memories</p>
+  <h2 class="h2">photos & <em>videos</em></h2>
+  <div class="photo-grid">
+    <div class="photo-slot p-wide">
+      <img src="photos/memory1.jpg" alt="Our first memory">
+    </div>
+    <div class="photo-slot">
+      <img src="photos/moment2.jpg" alt="Special moment">
+    </div>
+    <div class="photo-slot">
+      <img src="photos/extra1.jpg" alt="Precious moment">
+    </div>
+    <div class="photo-slot p-wide">
+      <img src="photos/memory4.jpg" alt="Beautiful day">
+    </div>
+    <div class="photo-slot">
+      <img src="photos/extra2.jpg" alt="Happy times">
+    </div>
+    <div class="photo-slot">
+      <img src="photos/moment6.jpg" alt="Cherished memories">
+    </div>
+  </div>
+  <p class="photo-caption">— our journey captured in moments —</p>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ LETTER ═══ -->
+<section class="section reveal">
+  <p class="label">from the heart</p>
+  <h2 class="h2">a <em>letter</em> for you</h2>
+  <div class="letter-wrap">
+    <div class="letter-body">
+      <div class="letter-drop">"</div>
+      <p>My dearest Himani,</p>
+      <p>I've thought about how to begin this a hundred times, and I keep arriving at the same truth — there is no elegant way to say that someone has become <em>necessary</em> to you. So I'll just say it plainly: you have.</p>
+      <p>You are not the person I thought I'd find. You're quieter than I expected, and sharper, and far more stubborn. You notice things other people don't. You hold opinions the way some people hold possessions — carefully, and with good reason. I find this unreasonably attractive.</p>
+      <p>What I want you to know, on this day especially, is that being loved by you is not something I take lightly. It is, in fact, the thing I am most grateful for.</p>
+      <p>This page is a small, clumsy attempt to put that gratitude into something you can hold. It will never be enough. But it's honest, and it's yours.</p>
+      <span class="letter-sig">— yours, always 🖤</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ MEMORIES ═══ -->
+<section class="section reveal">
+  <p class="label">chapters of us</p>
+  <h2 class="h2">dates I <em>keep</em></h2>
+  <div class="mem-grid">
+    <div class="mem-card"><div class="mem-icon">✦</div><div class="mem-marker">The First Day</div><div class="mem-title">How It Started</div><div class="mem-desc">The beginning of everything. A day I'd choose again without hesitation.</div></div>
+    <div class="mem-card"><div class="mem-icon">🌙</div><div class="mem-marker">Our First Evening</div><div class="mem-title">Just the Two of Us</div><div class="mem-desc">I was underprepared. You were exactly as you are. It felt like I'd been waiting for it.</div></div>
+    <div class="mem-card"><div class="mem-icon">✿</div><div class="mem-marker">A Day I Remember</div><div class="mem-title">Write Your Memory</div><div class="mem-desc">Add the one that surfaces whenever you close your eyes and think of something good.</div></div>
+    <div class="mem-card"><div class="mem-icon">★</div><div class="mem-marker">Every Ordinary Day</div><div class="mem-title">The Quiet Ones</div><div class="mem-desc">The days that weren't special except that you were there. Those are the ones I keep.</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ REASONS ═══ -->
+<section class="section reveal">
+  <p class="label">the reason is you</p>
+  <h2 class="h2">why I <em>love</em> you</h2>
+  <div class="reasons-list">
+    <div class="reason"><span class="rnum">01</span><p class="rtxt">The way you are <em>exactly</em> as you are — no performance, no pretense, just you</p></div>
+    <div class="reason"><span class="rnum">02</span><p class="rtxt">How you make <em>silence</em> feel like a complete conversation</p></div>
+    <div class="reason"><span class="rnum">03</span><p class="rtxt">That your mind moves in ways I haven't <em>figured out yet</em> — and I want to keep trying</p></div>
+    <div class="reason"><span class="rnum">04</span><p class="rtxt">The way you <em>laugh</em> — like something you couldn't contain even if you tried</p></div>
+    <div class="reason"><span class="rnum">05</span><p class="rtxt">Simply because knowing you has made me <em>more</em> — more careful, more honest, more myself</p></div>
+  </div>
+</section>
+
+<footer class="reveal">
+  <div class="footer-rule"></div>
+  <span class="footer-heart">🖤</span>
+  <p class="footer-quote">made with every honest thing I have</p>
+  <p class="footer-end">for himani · always &amp; forever</p>
+  <div class="footer-rule"></div>
+</footer>
+</main>
+
+<script>
+// ── CURSOR
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+document.addEventListener('mousemove',e=>{
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+  setTimeout(()=>{ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px'},90);
+});
+
+// ── STARS
+const sc=document.getElementById('stars-c'),sx=sc.getContext('2d');let stars=[];
+function initStars(){sc.width=innerWidth;sc.height=innerHeight;stars=Array.from({length:120},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,r:Math.random()*1.3+.2,a:Math.random()*Math.PI*2,s:Math.random()*.004+.002}));}
+function drawStars(){sx.clearRect(0,0,sc.width,sc.height);stars.forEach(s=>{s.a+=s.s;const al=(Math.sin(s.a)+1)/2*.6+.1;sx.beginPath();sx.arc(s.x,s.y,s.r,0,Math.PI*2);sx.fillStyle=`rgba(237,224,206,${al})`;sx.fill();});requestAnimationFrame(drawStars);}
+initStars();drawStars();addEventListener('resize',initStars);
+
+// ── PETALS
+const pc=document.getElementById('petals-c'),px=pc.getContext('2d');let petals=[];
+function initPetals(){pc.width=innerWidth;pc.height=innerHeight;}
+function spawnPetal(){petals.push({x:Math.random()*pc.width,y:-20,sz:Math.random()*9+3,vy:Math.random()*1.1+.4,vx:(Math.random()-.5)*.7,rot:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.04,al:Math.random()*.45+.2,c:Math.random()>.5?'rgba(160,32,64,':'rgba(120,24,48,'});}
+function drawPetals(){px.clearRect(0,0,pc.width,pc.height);petals.forEach((p,i)=>{p.y+=p.vy;p.x+=p.vx+Math.sin(p.y*.018)*.4;p.rot+=p.rs;px.save();px.translate(p.x,p.y);px.rotate(p.rot);px.globalAlpha=p.al;px.beginPath();px.ellipse(0,0,p.sz,p.sz*.5,0,0,Math.PI*2);px.fillStyle=p.c+p.al+')';px.fill();px.restore();if(p.y>pc.height+30)petals.splice(i,1);});requestAnimationFrame(drawPetals);}
+initPetals();setInterval(spawnPetal,380);drawPetals();addEventListener('resize',initPetals);
+
+// ── CONFETTI
+const cc=document.getElementById('conf-c'),cx=cc.getContext('2d');let conf=[];
+function launchConf(){
+  cc.width=innerWidth;cc.height=innerHeight;cc.style.display='block';
+  const cols=['#c8a96e','#e8d080','#7a1830','#a02040','#ede0ce','#c84060','#fff'];
+  for(let i=0;i<100;i++)conf.push({x:Math.random()*cc.width,y:-30,w:Math.random()*10+3,h:Math.random()*6+2,rot:Math.random()*360,rs:Math.random()*6-3,vy:Math.random()*4+2,vx:Math.random()*3-1.5,c:cols[Math.floor(Math.random()*cols.length)],al:1});
+  animConf();setTimeout(()=>{cc.style.display='none';conf=[];},6000);
+}
+function animConf(){cx.clearRect(0,0,cc.width,cc.height);conf.forEach(p=>{p.y+=p.vy;p.x+=p.vx;p.rot+=p.rs;p.al-=.004;cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot*Math.PI/180);cx.globalAlpha=Math.max(0,p.al);cx.fillStyle=p.c;cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);cx.restore();});if(conf.some(p=>p.al>0))requestAnimationFrame(animConf);}
+
+// ── CANDLES WITH MICROPHONE
+const TOTAL=7;let blown=0,micStream=null,analyser=null,blowDetecting=false;
+(function buildCake(){
+  const row=document.getElementById('candles-row');
+  for(let i=0;i<TOTAL;i++)row.innerHTML+=`<div class="candle" id="c${i}" onclick="blowCandle(${i})"><div class="flame-wrap"><div class="flame"></div><div class="flame-inner"></div><div class="smoke-trail"></div></div><div class="wick-el"></div><div class="wax"><div class="wax-drip"></div></div></div>`;
+})();
+function blowCandle(i){const c=document.getElementById('c'+i);if(c&&!c.classList.contains('out')){c.classList.add('out');blown++;updateWish();}}
+function blowOne(){const all=[...document.querySelectorAll('.candle:not(.out)')];if(all.length)blowCandle(+all[Math.floor(Math.random()*all.length)].id.slice(1));}
+function updateWish(){const left=TOTAL-blown,wt=document.getElementById('wish-text');if(left===0){wt.style.display='none';document.getElementById('wish-final').style.display='block';launchConf();stopMicrophone();}else wt.textContent=blown===0?'tap a candle, blow into mic, or use the button':`${left} more to go…`;}
+
+// ── MICROPHONE BLOW DETECTION
+async function startMicrophone(){
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const audioContext=new(window.AudioContext||window.webkitAudioContext)();
+    analyser=audioContext.createAnalyser();
+    const source=audioContext.createMediaStreamSource(micStream);
+    source.connect(analyser);
+    analyser.fftSize=256;
+    blowDetecting=true;
+    detectBlow();
+  }catch(e){console.log('Microphone access denied');}
+}
+function stopMicrophone(){blowDetecting=false;if(micStream){micStream.getTracks().forEach(track=>track.stop());micStream=null;}}
+function detectBlow(){
+  if(!blowDetecting||!analyser)return;
+  const buffer=new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(buffer);
+  const avg=buffer.reduce((a,b)=>a+b,0)/buffer.length;
+  if(avg>30){const all=[...document.querySelectorAll('.candle:not(.out)')];if(all.length){blowCandle(+all[0].id.slice(1));setTimeout(detectBlow,500);return;}}
+  requestAnimationFrame(detectBlow);
+}
+// Start microphone when cake section is visible
+const cakeObserver=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting&&!blowDetecting)startMicrophone();});},{threshold:.5});
+cakeObserver.observe(document.getElementById('cake-sec'));
+
+// ── MODALS
+function openModal(k){document.getElementById('ov-'+k).classList.add('open');document.getElementById('g-'+k)?.classList.add('opened');}
+function closeModal(k){document.getElementById('ov-'+k).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ── MUSIC
+let playing=false,audioElement=null,currentTrack=0;
+const tracks=[
+  {title:"Tomar Chokher Kalo",artist:"Birthday Song",file:"audio/birthday-song.mp3"}
+];
+function selectTrack(idx){currentTrack=idx;document.querySelectorAll('.track-item').forEach(t=>t.classList.remove('active'));document.querySelector(`[data-track="${idx}"]`).classList.add('active');if(playing){audioElement.pause();audioElement.src=tracks[currentTrack].file;audioElement.play();}}
+function togglePlay(){
+  if(!audioElement){
+    audioElement=new Audio(tracks[currentTrack].file);
+    audioElement.addEventListener('ended',()=>{playing=false;document.getElementById('play-btn').textContent='▶';document.getElementById('vinyl').classList.remove('playing');document.getElementById('needle').classList.remove('playing');document.getElementById('wave-bars').classList.add('still');});
+  }
+  playing=!playing;
+  document.getElementById('play-btn').textContent=playing?'⏸':'▶';
+  document.getElementById('vinyl').classList.toggle('playing',playing);
+  document.getElementById('needle').classList.toggle('playing',playing);
+  document.getElementById('wave-bars').classList.toggle('still',!playing);
+  if(playing){audioElement.play();}else{audioElement.pause();}
+}
+
+// ── BOOK WITH NEW DESIGN
+const bookPages=[
+  {title:"The Day We Met",text:"Some people spend their whole lives searching for what I found the moment I met you. You are the kind of person who makes the world feel quieter and softer — a place I actually want to stay in."},
+  {title:"Our First Dance",text:"In that moment, with music playing and everyone watching, I only saw you. The world disappeared and there was just the feeling of your hand in mine and the certainty that this was exactly where I was meant to be."},
+  {title:"Late Night Talks",text:"We talk about everything and nothing until the stars fade. Your mind is the most interesting place I've ever been, and I want to spend the rest of my life exploring it."},
+  {title:"The Way You Laugh",text:"When you laugh, it's like someone turned on the lights in a dark room. Everything becomes brighter and warmer, and I forget what I was worried about."},
+  {title:"Your Quiet Strength",text:"You face the world with a grace I'll never understand. You carry your burdens lightly and make space for others to be themselves, especially me."},
+  {title:"Every Ordinary Day",text:"My favorite thing about us is how extraordinary the ordinary has become. Coffee in the morning, walks in the evening, your presence beside me — it's everything."},
+  {title:"Forever With You",text:"I don't know what the future holds, but I know exactly who I want it with. You're not just my love story; you're my whole story."}
+];
+let curPage=0;
+function renderBook(){
+  const prevIdx=(curPage-1+bookPages.length)%bookPages.length;
+  const curr=bookPages[curPage];
+  document.getElementById('prev-page-num').textContent=`— ${prevIdx+1} —`;
+  document.getElementById('prev-page-text').textContent=bookPages[prevIdx].title;
+  document.getElementById('current-page-title').textContent=curr.title;
+  document.getElementById('current-page-text').textContent=curr.text;
+  document.getElementById('page-ct').textContent=`${curPage+1} / ${bookPages.length}`;
+}
+function nextPage(){curPage=(curPage+1)%bookPages.length;renderBook();}
+function prevPage(){curPage=(curPage-1+bookPages.length)%bookPages.length;renderBook();}
+renderBook();
+
+// ── SCRATCH CARD
+let scratchCanvas,scratchCtx,scratching=false,scratched=0;
+function initScratch(){
+  scratchCanvas=document.getElementById('scratch-canvas');
+  scratchCtx=scratchCanvas.getContext('2d');
+  const gradient=scratchCtx.createLinearGradient(0,0,400,250);
+  gradient.addColorStop(0,'#c8a96e');gradient.addColorStop(0.5,'#e8d080');gradient.addColorStop(1,'#c8a96e');
+  scratchCtx.fillStyle=gradient;scratchCtx.fillRect(0,0,400,250);
+  scratchCtx.fillStyle='#050308';scratchCtx.font='bold 24px Cinzel';scratchCtx.textAlign='center';scratchCtx.fillText('SCRATCH HERE',200,125);
+  scratchCtx.font='14px Cinzel';scratchCtx.fillText('to reveal your surprise',200,155);
+  scratchCanvas.addEventListener('mousedown',startScratching);
+  scratchCanvas.addEventListener('mousemove',scratch);
+  scratchCanvas.addEventListener('mouseup',stopScratching);
+  scratchCanvas.addEventListener('touchstart',startScratching,{passive:false});
+  scratchCanvas.addEventListener('touchmove',scratch,{passive:false});
+  scratchCanvas.addEventListener('touchend',stopScratching);
+}
+function startScratching(e){e.preventDefault();scratching=true;scratch(e);}
+function stopScratching(){scratching=false;}
+function scratch(e){
+  if(!scratching)return;
+  e.preventDefault();
+  const rect=scratchCanvas.getBoundingClientRect();
+  const x=(e.clientX||e.touches[0].clientX)-rect.left;
+  const y=(e.clientY||e.touches[0].clientY)-rect.top;
+  scratchCtx.globalCompositeOperation='destination-out';
+  scratchCtx.beginPath();scratchCtx.arc(x,y,20,0,Math.PI*2);scratchCtx.fill();
+  scratched+=4;
+  if(scratched>3000){
+    scratchCanvas.style.opacity='0';
+    setTimeout(()=>{scratchCanvas.style.display='none';},300);
+  }
+}
+// Initialize scratch card when modal opens
+const scratchObserver=new MutationObserver(mutations=>{mutations.forEach(m=>{if(m.target.id==='ov-scratch'&&m.target.classList.contains('open')){setTimeout(initScratch,100);}});});
+scratchObserver.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+
+// ── SCROLL REVEAL
+const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}}),{threshold:.07});
+document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
+</script>
+</body>
+</html>
